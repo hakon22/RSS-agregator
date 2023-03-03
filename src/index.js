@@ -1,5 +1,6 @@
 import _ from 'lodash';
-import './style.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+//import './style.css';
 // import Icon from './avocado.png';
 
 const component = () => {
