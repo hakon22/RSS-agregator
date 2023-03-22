@@ -47,7 +47,9 @@ export default (state, i18nextInstance) => {
     const descriptionFirst = feeds.querySelector('description');
     state.general.push({ id: uniqueId('gen_'), data: { title: titleFirst.textContent, description: descriptionFirst.textContent } });
     const item = feeds.querySelectorAll('item');
-    genDomFeeds(state.selectors.divPosts, state.selectors.divFeeds);
+    if (state.feeds.length === 0) {
+      genDomFeeds(state.selectors.divPosts, state.selectors.divFeeds);
+    }
     const ul = state.selectors.divFeeds.querySelector('ul');
     const ulPost = state.selectors.divPosts.querySelector('ul');
     const li = document.createElement('li');
@@ -59,18 +61,34 @@ export default (state, i18nextInstance) => {
     h3.textContent = titleFirst.textContent;
     p.textContent = descriptionFirst.textContent;
     li.append(h3, p);
-    ul.append(li);
+    ul.prepend(li);
+    let ulStr = '';
     item.forEach((i) => {
       const title = i.querySelector('title');
       const description = i.querySelector('description');
-      state.feeds.push({ id: uniqueId(), data: { title: title.textContent, description: description.textContent } });
+      const link = i.querySelector('link');
+      state.feeds.push({ id: uniqueId(), data: { title: title.textContent, description: description.textContent, link: link.textContent } });
       const liPost = document.createElement('li');
+      const a = document.createElement('a');
+      const button = document.createElement('button');
+      a.classList.add('fw-bold');
+      a.setAttribute('href', link.textContent);
+      const id = state.feeds.length - 1;
+      a.setAttribute('data-id', state.feeds[id].id);
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
+      a.textContent = title.textContent;
+      button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+      button.setAttribute('type', 'button');
+      button.setAttribute('data-id', state.feeds[id].id);
+      button.setAttribute('data-bs-toggle', 'modal');
+      button.setAttribute('data-bs-target', '#modal');
+      button.textContent = i18nextInstance.t('view');
       liPost.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-      liPost.textContent = title.textContent;
-      ulPost.append(liPost);
+      liPost.append(a, button);
+      ulStr += liPost.outerHTML;
     });
-    console.log(state.feeds);
-    console.log(state.general);
+    ulPost.innerHTML = ulStr + ulPost.innerHTML;
   };
   const parser = (response) => {
     const pars = new DOMParser();
@@ -85,34 +103,31 @@ export default (state, i18nextInstance) => {
 
   const render = (path, value) => {
     if (path === 'selectors.p3.textContent') {
-      if (value === i18nextInstance.t('errorValid')) {
-        state.selectors.p3.classList.remove('text-success');
-        state.selectors.p3.classList.add('text-danger');
-        state.selectors.input.classList.add('is-invalid');
-      }
-      if (value === i18nextInstance.t('errorDuble')) {
-        state.selectors.p3.classList.remove('text-success');
-        state.selectors.p3.classList.add('text-danger');
-        state.selectors.input.classList.add('is-invalid');
-      }
+      state.selectors.p3.classList.remove('text-success');
+      state.selectors.p3.classList.add('text-danger');
+      state.selectors.input.classList.add('is-invalid');
     }
     if (path === 'links') {
       state.selectors.input.classList.remove('is-invalid');
-      state.selectors.form.reset();
-      state.selectors.input.focus();
-      axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${value}`)
+      axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${state.links[value.length - 1]}`)
         .then((response) => {
+          const parsedDoc = parser(response);
+          newFeed(parsedDoc);
           state.selectors.p3.classList.remove('text-danger');
           state.selectors.p3.classList.add('text-success');
           state.selectors.p3.textContent = i18nextInstance.t('addSuccess');
-          const parsedDoc = parser(response);
-          newFeed(parsedDoc);
+          state.selectors.form.reset();
+          state.selectors.input.focus();
         })
-        .catch(() => {
+        .catch((e) => {
           state.selectors.p3.classList.remove('text-success');
           state.selectors.p3.classList.add('text-danger');
-          state.selectors.p3.textContent = i18nextInstance.t('dontParse');
           state.links.pop();
+          if (e.request) {
+            state.selectors.p3.textContent = i18nextInstance.t('errorNetwork');
+          } else {
+            state.selectors.p3.textContent = i18nextInstance.t('dontParse');
+          }
         });
     }
   };
