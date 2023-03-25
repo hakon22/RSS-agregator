@@ -11,8 +11,8 @@ export default () => {
       ru: {
         translation: {
           name: 'RSS агрегатор',
-          name_feeds: 'Фиды',
-          name_posts: 'Посты',
+          name_feeds: 'Ленты',
+          name_posts: 'Новости',
           nameNotice: 'Начните читать RSS сегодня! Это легко, это красиво.',
           example: 'Пример: https://ru.hexlet.io/lessons.rss',
           label: 'Ссылка RSS',
@@ -41,9 +41,11 @@ export default () => {
       divPosts: document.querySelector('.posts'),
       divFeeds: document.querySelector('.feeds'),
     },
+    dataLinks: {},
+    dataLinksTemp: {
+      data: [],
+    },
     links: [],
-    feeds: [],
-    general: [],
   };
 
   watcher(state, i18nextInstance);
