@@ -28,53 +28,6 @@ export default (state, i18nextInstance) => {
     }
     return doc.documentElement;
   };
-  const reloadData = (url, dataOld) => {
-    axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${url}`)
-      .then((response) => {
-        const parsedDoc = parser(response);
-        if (!parsedDoc.isEqualNode(dataOld)) {
-          const data = [...parsedDoc.querySelectorAll('item')];
-          const data2 = [...dataOld.querySelectorAll('item')];
-          const newData = data.filter((i) => data2.indexOf(i) < 0);
-//          const newData = data.filter((x) => {
-  //          const title = x.querySelector('title');
-    //        const result = state.dataLinks[url].data.find((y) => y.title === title.textContent);
-      //      if (!result) return x;
-        //  });
-          let ulStr;
-          console.log(newData)
-          if (newData.length > 0) {
-            const ulPost = state.selectors.divPosts.querySelector('ul');
-            const title = newData[0].querySelector('title');
-            const description = newData[0].querySelector('description');
-            const link = newData[0].querySelector('link');
-            const id = uniqueId();
-            const post = new Post(id, title.textContent, description.textContent, link.textContent);
-            state.dataLinks[url].data.push(post);
-            const liPost = document.createElement('li');
-            const a = document.createElement('a');
-            const button = document.createElement('button');
-            a.classList.add('fw-bold');
-            a.setAttribute('href', post.getLink());
-            a.setAttribute('data-id', post.getId());
-            a.setAttribute('target', '_blank');
-            a.setAttribute('rel', 'noopener noreferrer');
-            a.textContent = post.getTitle();
-            button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
-            button.setAttribute('type', 'button');
-            button.setAttribute('data-id', post.getId());
-            button.setAttribute('data-bs-toggle', 'modal');
-            button.setAttribute('data-bs-target', '#modal');
-            button.textContent = i18nextInstance.t('view');
-            liPost.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-            liPost.append(a, button);
-            ulStr = liPost.outerHTML;
-            ulPost.innerHTML = ulStr + ulPost.innerHTML;
-          }
-        }
-      });
-    setTimeout(reloadData, 5000, url, dataOld);
-  };
 
   const genDomFeeds = (divPosts, divFeeds) => {
     const divPostsCard = document.createElement('div');
@@ -103,6 +56,69 @@ export default (state, i18nextInstance) => {
     divPosts.append(divPostsCard);
   };
 
+  const dataUpload = (i, url) => {
+    const title = i.querySelector('title');
+    const description = i.querySelector('description');
+    const link = i.querySelector('link');
+    const id = uniqueId();
+    const post = new Post(id, title.textContent, description.textContent, link.textContent);
+    state.dataLinks[url].data.push(post);
+    return post;
+  };
+
+  const viewContent = (url, result = []) => {
+    const path = result.length === 0 ? url.data : result;
+    return path.map((post) => {
+      const liPost = document.createElement('li');
+      const a = document.createElement('a');
+      const button = document.createElement('button');
+      a.classList.add('fw-bold');
+      a.setAttribute('href', post.getLink());
+      a.setAttribute('data-id', post.getId());
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
+      a.textContent = post.getTitle();
+      button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+      button.setAttribute('type', 'button');
+      button.setAttribute('data-id', post.getId());
+      button.setAttribute('data-bs-toggle', 'modal');
+      button.setAttribute('data-bs-target', '#modal');
+      button.textContent = i18nextInstance.t('view');
+      liPost.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+      liPost.append(a, button);
+      return liPost.outerHTML;
+    });
+  };
+
+  const reloadData = (url, dataOld) => {
+    axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${url}`)
+      .then((response) => {
+        const parsedDoc = parser(response);
+        if (!parsedDoc.isEqualNode(dataOld)) {
+          const data = [...parsedDoc.querySelectorAll('item')];
+          const data2 = [...dataOld.querySelectorAll('item')].map((i) => i.querySelector('title').textContent);
+          const newData = data.filter((i) => {
+            const text = i.querySelector('title').textContent;
+            if (!data2.includes(text)) {
+              return i;
+            }
+          });
+          //  const newData = data.filter((x) => {
+          //    const title = x.querySelector('title');
+          //    const result = state.dataLinks[url].data.find((y) => y.title === title.textContent);
+          //    if (!result) return x;
+          //  });
+          console.log(newData)
+          const result = newData.map((i) => dataUpload(i, url));
+          console.log(result)
+          const ulPost = state.selectors.divPosts.querySelector('ul');
+          ulPost.innerHTML = viewContent(url, result) + ulPost.innerHTML;
+        }
+      })
+      .catch(console.log);
+    setTimeout(reloadData, 5000, url, dataOld);
+  };
+
   const newFeed = (feeds, value) => {
     const titleFirst = feeds.querySelector('title');
     const descriptionFirst = feeds.querySelector('description');
@@ -124,34 +140,8 @@ export default (state, i18nextInstance) => {
     p.textContent = header.getHeaderDescription();
     li.append(h3, p);
     ul.prepend(li);
-    let ulStr = '';
-    data.forEach((i) => {
-      const title = i.querySelector('title');
-      const description = i.querySelector('description');
-      const link = i.querySelector('link');
-      const id = uniqueId();
-      const post = new Post(id, title.textContent, description.textContent, link.textContent);
-      state.dataLinks[value].data.push(post);
-      const liPost = document.createElement('li');
-      const a = document.createElement('a');
-      const button = document.createElement('button');
-      a.classList.add('fw-bold');
-      a.setAttribute('href', post.getLink());
-      a.setAttribute('data-id', post.getId());
-      a.setAttribute('target', '_blank');
-      a.setAttribute('rel', 'noopener noreferrer');
-      a.textContent = post.getTitle();
-      button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
-      button.setAttribute('type', 'button');
-      button.setAttribute('data-id', post.getId());
-      button.setAttribute('data-bs-toggle', 'modal');
-      button.setAttribute('data-bs-target', '#modal');
-      button.textContent = i18nextInstance.t('view');
-      liPost.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-      liPost.append(a, button);
-      ulStr += liPost.outerHTML;
-    });
-    ulPost.innerHTML = ulStr + ulPost.innerHTML;
+    data.forEach((i) => dataUpload(i, value));
+    ulPost.innerHTML = viewContent(state.dataLinks[value]).join('');
     setTimeout(reloadData, 5000, value, feeds);
   };
 
