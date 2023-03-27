@@ -58,37 +58,35 @@ export default (state, i18nextInstance) => {
     divPosts.append(divPostsCard);
   };
 
-  const modalData = (url) => {
+  const modalData = () => {
     const modal = document.querySelector('#modal');
     const modalTitle = modal.querySelector('.modal-title');
     const modalBody = modal.querySelector('.modal-body');
-    const modalFullArticleBtn = document.querySelector('.modal-footer a.full-article');
+    const modalFooter = document.querySelector('.modal-footer a.full-article');
     const updateStatus = (e) => {
       const { id } = e.target.dataset;
-      state.dataLinks[url].data.forEach((post) => {
+      const allPost = state.links.reduce((acc, value) => {
+        const { data } = state.dataLinks[value];
+        return acc.concat(data);
+      }, []);
+      allPost.filter((post) => {
         if (post.getId() === id) {
           if (!post.getStatus()) {
-            post.setStatus();
             const a = e.target.parentNode.firstChild;
             a.classList.remove('fw-bold');
             a.classList.add('fw-normal', 'link-secondary');
+            post.setStatus();
           }
           if (e.target.type === 'button') {
             modalTitle.textContent = post.getTitle();
             modalBody.innerHTML = post.getDescription();
-            modalFullArticleBtn.setAttribute('href', post.getLink());
+            modalFooter.setAttribute('href', post.getLink());
           }
         }
       });
     };
-    const buttons = document.querySelectorAll('.btn-sm');
-    const aLinks = document.querySelectorAll('.fw-bold');
-    buttons.forEach((button) => {
-      button.removeEventListener('click', updateStatus);
-      button.addEventListener('click', updateStatus);
-    });
+    const aLinks = [...document.querySelectorAll('.fw-bold'), ...document.querySelectorAll('.btn-sm')];
     aLinks.forEach((a) => {
-      a.removeEventListener('click', updateStatus);
       a.addEventListener('click', updateStatus);
     });
   };
@@ -147,7 +145,7 @@ export default (state, i18nextInstance) => {
             const result = newData.map((i) => dataUpload(i, url));
             const ulPost = state.selectors.divPosts.querySelector('ul');
             ulPost.innerHTML = viewContent(url, result).join('') + ulPost.innerHTML;
-            modalData(url);
+            modalData();
           }
         }
         return parsedDoc;
@@ -178,8 +176,8 @@ export default (state, i18nextInstance) => {
     li.append(h3, p);
     ul.prepend(li);
     data.forEach((i) => dataUpload(i, value));
-    ulPost.innerHTML = viewContent(state.dataLinks[value]).join('');
-    modalData(value);
+    ulPost.innerHTML = viewContent(state.dataLinks[value]).join('') + ulPost.innerHTML;
+    modalData();
     setTimeout(reloadData, 5000, value, feeds);
   };
 
