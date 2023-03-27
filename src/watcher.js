@@ -75,7 +75,7 @@ export default (state, i18nextInstance) => {
           }
           if (e.target.type === 'button') {
             modalTitle.textContent = post.getTitle();
-            modalBody.textContent = post.getDescription();
+            modalBody.innerHTML = post.getDescription();
             modalFullArticleBtn.setAttribute('href', post.getLink());
           }
         }
