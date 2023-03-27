@@ -26,6 +26,8 @@ export default () => {
           project_text: 'created by ',
           project_link: 'https://github.com/hakon22/frontend-project-11',
           project_creator: 'Алексей Каледкин',
+          button_close: 'Закрыть',
+          button_read_full: 'Читать полностью',
         },
       },
     },
@@ -42,9 +44,6 @@ export default () => {
       divFeeds: document.querySelector('.feeds'),
     },
     dataLinks: {},
-    dataLinksTemp: {
-      data: [],
-    },
     links: [],
   };
 

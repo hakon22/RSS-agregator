@@ -4,6 +4,7 @@ export default class Post {
     this.title = title;
     this.description = description;
     this.link = link;
+    this.status = false;
   }
 
   getId() {
@@ -20,5 +21,13 @@ export default class Post {
 
   getLink() {
     return this.link;
+  }
+
+  getStatus() {
+    return this.status;
+  }
+
+  setStatus() {
+    this.status = true;
   }
 }

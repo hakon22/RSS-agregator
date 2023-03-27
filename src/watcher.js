@@ -1,3 +1,5 @@
+/* eslint-disable consistent-return */
+/* eslint-disable array-callback-return */
 /* eslint-disable max-len */
 /* eslint-disable no-param-reassign */
 import onChange from 'on-change';
@@ -56,6 +58,41 @@ export default (state, i18nextInstance) => {
     divPosts.append(divPostsCard);
   };
 
+  const modalData = (url) => {
+    const modal = document.querySelector('#modal');
+    const modalTitle = modal.querySelector('.modal-title');
+    const modalBody = modal.querySelector('.modal-body');
+    const modalFullArticleBtn = document.querySelector('.modal-footer a.full-article');
+    const updateStatus = (e) => {
+      const { id } = e.target.dataset;
+      state.dataLinks[url].data.forEach((post) => {
+        if (post.getId() === id) {
+          if (!post.getStatus()) {
+            post.setStatus();
+            const a = e.target.parentNode.firstChild;
+            a.classList.remove('fw-bold');
+            a.classList.add('fw-normal', 'link-secondary');
+          }
+          if (e.target.type === 'button') {
+            modalTitle.textContent = post.getTitle();
+            modalBody.textContent = post.getDescription();
+            modalFullArticleBtn.setAttribute('href', post.getLink());
+          }
+        }
+      });
+    };
+    const buttons = document.querySelectorAll('.btn-sm');
+    const aLinks = document.querySelectorAll('.fw-bold');
+    buttons.forEach((button) => {
+      button.removeEventListener('click', updateStatus);
+      button.addEventListener('click', updateStatus);
+    });
+    aLinks.forEach((a) => {
+      a.removeEventListener('click', updateStatus);
+      a.addEventListener('click', updateStatus);
+    });
+  };
+
   const dataUpload = (i, url) => {
     const title = i.querySelector('title');
     const description = i.querySelector('description');
@@ -72,18 +109,21 @@ export default (state, i18nextInstance) => {
       const liPost = document.createElement('li');
       const a = document.createElement('a');
       const button = document.createElement('button');
+
       a.classList.add('fw-bold');
       a.setAttribute('href', post.getLink());
       a.setAttribute('data-id', post.getId());
       a.setAttribute('target', '_blank');
       a.setAttribute('rel', 'noopener noreferrer');
       a.textContent = post.getTitle();
+
       button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
       button.setAttribute('type', 'button');
       button.setAttribute('data-id', post.getId());
       button.setAttribute('data-bs-toggle', 'modal');
       button.setAttribute('data-bs-target', '#modal');
       button.textContent = i18nextInstance.t('view');
+
       liPost.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
       liPost.append(a, button);
       return liPost.outerHTML;
@@ -96,27 +136,24 @@ export default (state, i18nextInstance) => {
         const parsedDoc = parser(response);
         if (!parsedDoc.isEqualNode(dataOld)) {
           const data = [...parsedDoc.querySelectorAll('item')];
-          const data2 = [...dataOld.querySelectorAll('item')].map((i) => i.querySelector('title').textContent);
+          const data2 = state.dataLinks[url].data.map((i) => i.title);
           const newData = data.filter((i) => {
             const text = i.querySelector('title').textContent;
             if (!data2.includes(text)) {
               return i;
             }
           });
-          //  const newData = data.filter((x) => {
-          //    const title = x.querySelector('title');
-          //    const result = state.dataLinks[url].data.find((y) => y.title === title.textContent);
-          //    if (!result) return x;
-          //  });
-          console.log(newData)
-          const result = newData.map((i) => dataUpload(i, url));
-          console.log(result)
-          const ulPost = state.selectors.divPosts.querySelector('ul');
-          ulPost.innerHTML = viewContent(url, result) + ulPost.innerHTML;
+          if (newData.length > 0) {
+            const result = newData.map((i) => dataUpload(i, url));
+            const ulPost = state.selectors.divPosts.querySelector('ul');
+            ulPost.innerHTML = viewContent(url, result).join('') + ulPost.innerHTML;
+            modalData(url);
+          }
         }
+        return parsedDoc;
       })
+      .finally((doc) => setTimeout(reloadData, 5000, url, doc))
       .catch(console.log);
-    setTimeout(reloadData, 5000, url, dataOld);
   };
 
   const newFeed = (feeds, value) => {
@@ -142,6 +179,7 @@ export default (state, i18nextInstance) => {
     ul.prepend(li);
     data.forEach((i) => dataUpload(i, value));
     ulPost.innerHTML = viewContent(state.dataLinks[value]).join('');
+    modalData(value);
     setTimeout(reloadData, 5000, value, feeds);
   };
 
@@ -181,10 +219,11 @@ export default (state, i18nextInstance) => {
   state.selectors.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const schema = yup.string().url().notOneOf(state.links);
-    schema.validate(e.target[0].value).then((value) => {
-      watchedState.dataLinks[value] = new Feed();
-      watchedState.links.push(value);
-    })
+    schema.validate(e.target[0].value)
+      .then((value) => {
+        watchedState.dataLinks[value] = new Feed();
+        watchedState.links.push(value);
+      })
       .catch((error) => {
         watchedState.selectors.p3.textContent = i18nextInstance.t(error.errors[0]);
       });
