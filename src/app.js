@@ -19,7 +19,7 @@ export default () => {
           submitButtonName: 'Добавить',
           errorValid: 'Ссылка должна быть валидным URL',
           not_null: 'Не должно быть пустым',
-          errorNetwork: 'Проверьте подключение к Интернету',
+          errorNetwork: 'Ошибка сети',
           errorDuble: 'RSS уже существует',
           addSuccess: 'RSS успешно загружен',
           dontParse: 'Ресурс не содержит валидный RSS',
