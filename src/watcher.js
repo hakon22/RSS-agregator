@@ -14,6 +14,7 @@ export default (state, i18nextInstance) => {
   yup.setLocale({
     mixed: {
       notOneOf: 'errorDuble',
+      min: 'not_null',
     },
     string: {
       url: 'errorValid',
@@ -216,7 +217,7 @@ export default (state, i18nextInstance) => {
 
   state.selectors.form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const schema = yup.string().url().notOneOf(state.links);
+    const schema = yup.string().min(1).url().notOneOf(state.links);
     schema.validate(e.target[0].value)
       .then((value) => {
         watchedState.dataLinks[value] = new Feed();

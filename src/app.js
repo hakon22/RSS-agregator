@@ -18,6 +18,7 @@ export default () => {
           label: 'Ссылка RSS',
           submitButtonName: 'Добавить',
           errorValid: 'Ссылка должна быть валидным URL',
+          not_null: 'Не должно быть пустым',
           errorNetwork: 'Проверьте подключение к Интернету',
           errorDuble: 'RSS уже существует',
           addSuccess: 'RSS успешно загружен',
