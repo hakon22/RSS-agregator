@@ -1,16 +1,11 @@
 install:
-	npm install
+	npm ci
 
 lint:
 	npx eslint .
-
-test:
-	npm test
 
 build:
 	npm run build
 
 run:
 	npx webpack serve
-
-.PHONY: test

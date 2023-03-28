@@ -14,10 +14,10 @@ export default (state, i18nextInstance) => {
   yup.setLocale({
     mixed: {
       notOneOf: 'errorDuble',
-      min: 'not_null',
     },
     string: {
       url: 'errorValid',
+      required: 'not_null',
     },
   });
 
