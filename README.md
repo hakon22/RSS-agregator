@@ -1,4 +1,4 @@
-[![Project screan](https://i.ibb.co/Wstxb7c/image.png)](https://frontend-project-11-hakon22.vercel.app/)
+[![Project screan](https://i.ibb.co/Wstxb7c/image.png)](https://portfolio.am-projects.ru/rss/)
 
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/hakon22/frontend-project-11/workflows/hexlet-check/badge.svg)](https://github.com/hakon22/frontend-project-11/actions)

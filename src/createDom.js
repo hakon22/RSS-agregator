@@ -45,7 +45,7 @@ export default (i18nextInstance) => {
   modalDiv.setAttribute('aria-labelledby', 'modal');
   modalDiv.setAttribute('style', 'display: none;');
   modalDiv.setAttribute('aria-hidden', 'true');
-  modalDialogDiv.classList.add('modal-dialog');
+  modalDialogDiv.classList.add('modal-dialog', 'modal-dialog-centered');
   modalDialogDiv.setAttribute('role', 'document');
   modalContentDiv.classList.add('modal-content');
   modalHeader.classList.add('modal-header');
